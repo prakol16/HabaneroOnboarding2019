@@ -29,8 +29,7 @@ SdFile file;
 File myFile; 
 
 TinyGPS gps;
-//IridiumSBD modem(IridiumSerial);
-IridiumSBD modem(Serial3);
+IridiumSBD modem(IridiumSerial);
 
 // BMP
 Adafruit_BMP280 bme;
@@ -51,7 +50,7 @@ const int eggPin = 22;  // Egg cutdown
 const int egg_alt = 2250; // Altitude at which egg cutsdown
 bool eggDropped; // true if egg has dropped
 
-const int mainPin = 23; // Main pin cutdown
+const int mainPin = 21; // Main pin cutdown
 const int main_alt = 22000; // Altitude at which main cutsdown
 bool mainDropped; // true if main has dropped
 
@@ -364,6 +363,17 @@ void loop() {
       strcpy(tmp, "Not trying to send.");
       writeToFile(logger, tmp);
     }
+  }
+
+  uint8_t received[2];
+  size_t receivedSize = sizeof(received);
+  
+  modem.sendReceiveSBDText(NULL, received, receivedSize);
+  if (received[0] == 'c' && received[1] == 'u') {
+    digitalWrite(mainPin, HIGH);
+    delay(3000);
+    mainDropped = true;
+    digitalWrite(mainPin, LOW);
   }
   
   delay(19000); // plus 1000 from smart delay = 20 seconds
